@@ -1,4 +1,8 @@
-FROM loadimpact/k6:latest
+FROM ghcr.io/grafana/operator:runner-v0.0.7rc4
 
 COPY --from=redboxoss/scuttle:latest scuttle /bin/scuttle
-ENTRYPOINT ["scuttle", "k6"]
+
+RUN printf "#!/bin/sh\nulimit -n 65535\necho -n \$(ulimit -a | grep 'open files')\nprintf \"\\\\n\"\nscuttle k6 \"\$@\"\n" >> ./runk6.sh
+RUN chmod +x ./runk6.sh
+
+ENTRYPOINT ["./runk6.sh"]
